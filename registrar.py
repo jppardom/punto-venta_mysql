@@ -1,6 +1,8 @@
 from tkinter import *
+from tkinter import messagebox
 from conexion import conexion
 from hashlib import sha1
+
 
 class registrar:
     def __init__(self):
@@ -75,8 +77,24 @@ class registrar:
         self.btnCancelar.config(font=("Comic Sans MS", 14))
 
     def guardar (self):
-        
-        password = sha1(self.txtPassword.get().encode('utf-8')).hexdigest()
-        print (self.txtPassword.get())
-        print(password) 
-        sql = "INSERT INTO usuario (cedula, nombres, apellidos, direccion, correo, usuario, password) VALUES (%s,%s,%s,%s,%s,%s,%s)"
+        if self.txtCedula.get() != "" and self.txtNombres.get() != "" and self.txtApellidos.get() != "" and self.txtDireccion.get() != "" and self.txtCorreo.get() != "" and self.txtUsuario.get() != "" and self.txtPassword.get() != "":
+            password = sha1(self.txtPassword.get().encode('utf-8')).hexdigest()
+            sql = "INSERT INTO usuario (cedula, nombres, apellidos, direccion, correo, usuario, password) VALUES (%s,%s,%s,%s,%s,%s,%s)"
+            parametros = (self.txtCedula.get(), self.txtNombres.get(), self.txtApellidos.get(), self.txtDireccion.get(), self.txtCorreo.get(), self.txtUsuario.get(), password)
+            if conexion.ejecutarSQL(sql, parametros):
+                messagebox.showinfo(title="Guardar datos", message="Datos de usuario guardados correctamente...!")
+                registrar.limpiar(self)
+            else:
+                messagebox.showerror(title="Error", message="Los datos de usuario no puede ser guardados..!")
+            
+        else:
+            messagebox.showwarning(title="Datos del formulario", message="Este formulario posee compos obligatorios")
+    
+    def limpiar (self):
+        self.txtCedula.delete(0,'end')
+        self.txtNombres.delete(0,'end')
+        self.txtApellidos.delete(0,'end')
+        self.txtDireccion.delete(0,'end')
+        self.txtCorreo.delete(0,'end')
+        self.txtUsuario.delete(0,'end')
+        self.txtPassword.delete(0,'end')

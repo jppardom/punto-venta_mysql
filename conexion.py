@@ -3,7 +3,7 @@ class conexion:
    
     @classmethod
     def ejecutarSQL (self, sql, parametros = ()):
-        con = pymysql.connect(host="locahost", user="root", paswd= "", db="punto_venta")
+        con = pymysql.connect(host="localhost", user="root", passwd= "", db="punto_venta")
         with con.cursor() as cursor:
             rest = cursor.execute(sql, parametros)
             con.commit()
