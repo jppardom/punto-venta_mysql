@@ -47,7 +47,7 @@ class clientes:
 
         self.cbxGenero = ttk.Combobox(self.frame)
         self.cbxGenero['values'] = ("[Seleccione]", "Masculino", "Femenino")
-        self.cbxGenero.current(0)
+        # self.cbxGenero.current(0)
         self.cbxGenero.grid(column=2, row=3, padx=7, pady=7)
         self.cbxGenero.config(font=("Comic Sans MS", 12))
 
@@ -99,6 +99,16 @@ class clientes:
         self.frameTabla.config(font=("Comic Sans MS", 16))
         self.frameTabla.grid(column=1, row=5, padx=7, pady=7, columnspan=8)
 
+        self.popup = Menu (self.frameTabla, tearoff= 0)
+        self.popup.add_command(label="EDITAR", command=lambda:clientes.editar(self))
+        self.popup.add_command(label="ELIMINAR")
+        def do_popup(event):
+            # display the popup menu
+            try:
+                self.popup.tk_popup(event.x_root, event.y_root, 0)
+            finally:
+                # make sure to release the grab (Tk 8.0a1 only)
+                self.popup.grab_release()
    
         self.tabla = ttk.Treeview(self.frameTabla, height=10, columns= ("id","cedula", "apellidos", "nombres", "genero",
                                                                          "telefono", "correo", "direccion"), show="headings")
@@ -108,9 +118,9 @@ class clientes:
         self.tabla.heading("cedula", text="CÉDULA", anchor="center")
         self.tabla.column("cedula", width=100)
         self.tabla.heading("apellidos", text="APELLIDOS", anchor="center")
-        self.tabla.column("apellidos", width=100)
+        self.tabla.column("apellidos", width=130)
         self.tabla.heading("nombres", text="NOMBRES ", anchor="center")
-        self.tabla.column("nombres", width=100)
+        self.tabla.column("nombres", width=130)
         self.tabla.heading("genero", text="GÉNERO", anchor="center")
         self.tabla.column("genero", width=100)
         self.tabla.heading("telefono", text="TELÉFONO", anchor="center")
@@ -119,10 +129,15 @@ class clientes:
         self.tabla.column("correo", width=200)
         self.tabla.heading("direccion", text="DIRECCIÓN", anchor="center")
         self.tabla.column("direccion", width=200)
+        self.tabla.bind("<Button-3>", do_popup)
+        self.cod_cliente = 0
 
+        clientes.cargarTabla(self)
         clientes.bloquear(self)
+        
 
     def bloquear (self):
+        clientes.limpiar(self)
         self.txtCedula.config(state="disabled")
         self.txtApellidos.config(state="disabled")
         self.txtNombres.config(state="disabled")
@@ -158,6 +173,7 @@ class clientes:
             messagebox.showinfo(title="Guardar datos de los clientes", message="Datos del cliente almancedos correctamen ...")
             clientes.limpiar(self)
             clientes.bloquear(self)
+            clientes.cargarTabla(self)
         else:
             messagebox.showerror(title="Guardar datos de los clientes", message="Los datos del cliente no pueden ser guardados ...")
     
@@ -170,9 +186,43 @@ class clientes:
         self.txtCorreo.delete(0, "end")
         self.txtDireccion.delete(0, "end")
         self.txtCedula.focus()
-    # def cargarTabla(self):
-    #     self.limpiar_tabla = self.tabla.get_children()
-    #     for elemento in self.limpiar_tabla:
-    #         self.tabla.delete(elemento)
-    #     self.sql = "" 
 
+    def cargarTabla(self):
+        self.limpiar_tabla = self.tabla.get_children()
+        for elemento in self.limpiar_tabla:
+            self.tabla.delete(elemento)
+        sql = "SELECT * FROM clientes"
+        data = conexion.ejecutarSQL(sql)
+        for fila in data:
+            self.tabla.insert("", fila[0],values=(fila[0], fila[1], fila[3], fila[2], fila[4], fila[5], fila[6], fila[7]))
+
+    def debloquearActualizar (self):
+        self.txtCedula.config(state="normal")
+        self.txtApellidos.config(state="normal")
+        self.txtNombres.config(state="normal")
+        self.cbxGenero["state"] = "normal"
+        self.txtTelefono.config(state="normal")
+        self.txtCorreo.config(state="normal")
+        self.txtDireccion.config(state="normal")
+        self.btnNuevo.config(state="disabled")
+        self.btnGuardar.config(state="disabled")
+        self.btnActualizar.config(state="normal")
+        self.btnCancelar.config(state="normal")
+        self.txtCedula.focus()
+
+    def editar(self):
+        try:
+            self.cod_cliente = self.tabla.item(self.tabla.selection())['values'][0]
+        except IndexError as e:
+            messagebox.showwarning(title="Selección de la fila", message="Primero seleccione una fila de la tabla")
+            return
+        clientes.debloquearActualizar (self)
+        self.cod_cliente = self.tabla.item(self.tabla.selection())['values'][0]
+        self.txtCedula.insert(0, self.tabla.item(self.tabla.selection())['values'][1])
+        self.txtCedula.config(state="disabled")
+        self.txtNombres.insert(0, self.tabla.item(self.tabla.selection())['values'][3])
+        self.txtApellidos.insert(0, self.tabla.item(self.tabla.selection())['values'][2])
+        self.cbxGenero.insert(0, self.tabla.item(self.tabla.selection())['values'][4])
+        self.txtTelefono.insert(0, self.tabla.item(self.tabla.selection())['values'][5])
+        self.txtCorreo.insert(0, self.tabla.item(self.tabla.selection())['values'][6])
+        self.txtDireccion.insert(0, self.tabla.item(self.tabla.selection())['values'][7])
