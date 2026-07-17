@@ -87,7 +87,7 @@ class clientes:
         self.btnGuardar.config(font=("Comic Sans MS", 12))
         self.btnGuardar.grid(column=6, row=2, padx=7, pady=7)
 
-        self.btnActualizar = Button(self.frameBotones, text="Actualizar", width=10)
+        self.btnActualizar = Button(self.frameBotones, text="Actualizar", width=10, command=lambda:clientes.actualizar(self))
         self.btnActualizar.config(font=("Comic Sans MS", 12))
         self.btnActualizar.grid(column=6, row=3, padx=7, pady=7)
 
@@ -101,7 +101,7 @@ class clientes:
 
         self.popup = Menu (self.frameTabla, tearoff= 0)
         self.popup.add_command(label="EDITAR", command=lambda:clientes.editar(self))
-        self.popup.add_command(label="ELIMINAR")
+        self.popup.add_command(label="ELIMINAR", command=lambda:clientes.eliminar(self))
         def do_popup(event):
             # display the popup menu
             try:
@@ -226,3 +226,38 @@ class clientes:
         self.txtTelefono.insert(0, self.tabla.item(self.tabla.selection())['values'][5])
         self.txtCorreo.insert(0, self.tabla.item(self.tabla.selection())['values'][6])
         self.txtDireccion.insert(0, self.tabla.item(self.tabla.selection())['values'][7])
+
+    def actualizar (self):
+        sql = """UPDATE clientes SET nombres=%s, apellidos=%s, genero=%s, telefono=%s, correo=%s, direccion=%s
+                WHERE id_cliente=%s"""
+        parametros = (self.txtNombres.get(), self.txtApellidos.get(), self.cbxGenero.get(),
+                      self.txtTelefono.get(), self.txtCorreo.get(), self.txtDireccion.get(), self.cod_cliente)
+        if (conexion.ejecutarSQL(sql, parametros)):
+            messagebox.showinfo(title="Actualizar datos de los clientes", message="Datos del cliente actualizados correctamente ...")
+            self.txtCedula.config(state="normal")
+            clientes.limpiar(self)
+            clientes.bloquear(self)
+            clientes.cargarTabla(self)
+        else:
+            messagebox.showerror(title="Actualizar datos de los clientes", message="Los datos del cliente no pueden ser actualizados ...")
+
+    def eliminar(self):
+        try:
+            self.cod_cliente = self.tabla.item(self.tabla.selection())['values'][0]
+        except IndexError as e:
+            messagebox.showwarning(title="Selección de la fila", message="Primero seleccione una fila de la tabla")
+            return
+        sql = "DELETE FROM clientes WHERE id_cliente = %s"
+        parametros = (self.cod_cliente)
+        respuesta = messagebox.askyesno(title="Confirmación", message="¿Quieres borrar este archivo permanente?")
+        if respuesta:
+            if conexion.ejecutarSQL(sql,parametros):
+                messagebox.showinfo(title="Eliminar datos de los clientes", message="Datos del cliente eliminados  correctamente ...")
+                clientes.limpiar(self)
+                clientes.bloquear(self)
+                clientes.cargarTabla(self)
+            else:
+                messagebox.showerror(title="Eliminar  datos de los clientes", message="Los datos del cliente no pueden ser elimininados ...")
+
+
+        
