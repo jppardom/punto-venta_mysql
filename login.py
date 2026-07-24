@@ -7,7 +7,9 @@ from conexion import conexion
 class login:
     def __init__ (self, vlogin):
         self.ventanaLogin = vlogin
+        self.ventanaLogin.geometry("500x260")
         self.ventanaLogin.title("Login del sistema")
+        self.centrar(self.ventanaLogin)
         self.frame = LabelFrame (self.ventanaLogin, text="Incio de sesión")
         self.frame.config(font=("Comic Sans MS", 18))
         self.frame.pack()
@@ -51,6 +53,13 @@ class login:
                 self.ventanaLogin.destroy()
                 principal.__init__(self, nombres)
 
+    def centrar(self,ventanaLogin): 
+        ventanaLogin.update_idletasks()
+        width = ventanaLogin.winfo_width()
+        height = ventanaLogin.winfo_height()
+        x = (ventanaLogin.winfo_screenwidth() // 2) - (width // 2)
+        y = (ventanaLogin.winfo_screenheight() // 2) - (height // 2)
+        ventanaLogin.geometry('{}x{}+{}+{}'.format(width, height, x, y))
 if __name__ == "__main__":
     objTkinter = Tk()
     objLogin = login(objTkinter)
